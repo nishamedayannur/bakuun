@@ -47,61 +47,94 @@ class TodoController extends Controller
         $xmlString = file_get_contents(public_path('sample.xml'));
         $xmlObject = simplexml_load_string($xmlString);
         
-        $CompanyName = $xmlObject->POS->Source->BookingChannel->CompanyName;
-        $CompanyType = $xmlObject->POS->Source->BookingChannel->attributes()->Type;
-        $CompanyCode = $xmlObject->POS->Source->BookingChannel->CompanyName->attributes()->Code;
+        $hotelDet['CompanyName'] = $xmlObject->POS->Source->BookingChannel->CompanyName;
+        $hotelDet['CompanyType'] = $xmlObject->POS->Source->BookingChannel->attributes()->Type;
+        $hotelDet['CompanyCode'] = $xmlObject->POS->Source->BookingChannel->CompanyName->attributes()->Code;
         
         $Inventories = $xmlObject->Inventories->Inventory;
-        $hotelDet = "{'CompanyName':$CompanyName,'CompanyType':$CompanyType,'CompanyCode':$CompanyCode,'Inventories':";
 
         $Hotel = Todo::create([
-            'CompanyName' => $CompanyName,
-            'CompanyType' => $CompanyType,
-            'CompanyCode' => $CompanyCode
+            'CompanyName' => $hotelDet['CompanyName'],
+            'CompanyType' => $hotelDet['CompanyType'],
+            'CompanyCode' => $hotelDet['CompanyCode']
         ]);
         $HotelId = $Hotel->id;
         $InventoryData = [];
         $count = count($Inventories);
-        $hotelDet .= "[";
         for($i = 0; $i<$count; $i++)
         {
             $StatusApplicationControl = $Inventories[$i]->StatusApplicationControl;
-            $Start = $StatusApplicationControl->attributes()->Start;
-            $End = $StatusApplicationControl->attributes()->End;
-            $InvTypeCode = $StatusApplicationControl->attributes()->InvTypeCode;
-            $RatePlanCode = $StatusApplicationControl->attributes()->RatePlanCode;
+            $RoomDet[$i]['Start'] = $StatusApplicationControl->attributes()->Start;
+            $RoomDet[$i]['End'] = $StatusApplicationControl->attributes()->End;
+            $RoomDet[$i]['InvTypeCode'] = $StatusApplicationControl->attributes()->InvTypeCode;
+            $RoomDet[$i]['RatePlanCode'] = $StatusApplicationControl->attributes()->RatePlanCode;
 
             $Rooms = Todo::create([
-                'Start' => $Start,
-                'End' => $End,
-                'InvTypeCode' => $InvTypeCode,
-                'RatePlanCode' => $RatePlanCode,
+                'Start' => $RoomDet[$i]['Start'],
+                'End' => $RoomDet[$i]['End'],
+                'InvTypeCode' => $RoomDet[$i]['InvTypeCode'],
+                'RatePlanCode' => $RoomDet[$i]['RatePlanCode'],
                 'ParentId' => $HotelId
             ]);
-            $hotelDet .= "{'Start':$Start,'End':$End,'InvTypeCode':$InvTypeCode,'RatePlanCode':$RatePlanCode,'InvCounts':";
             $RoomlId = $Rooms->id;
             $InvCounts = $Inventories[$i]->InvCounts->InvCount;
             $InvCountCnt = count($InvCounts);
-            $hotelDet .= "[";
             $InvCountsJson = '';
             for($j = 0; $j<$InvCountCnt; $j++)
             {
-                $InvCount = $InvCounts->attributes()->Count;
-                $CountType = $InvCounts->attributes()->CountType;
-                $InvCountsJson = "{'InvCount:$InvCount,'CountType':$CountType}";
-                $hotelDet .= $InvCountsJson;
+                $InvDet[$i][$j]['InvCount'] = $InvCounts->attributes()->Count;
+                $InvDet[$i][$j]['CountType'] = $InvCounts->attributes()->CountType;
                 $Rooms = Todo::create([
-                    'InvCount' => $InvCount,
-                    'CountType' => $CountType,
+                    'InvCount' => $InvDet[$i][$j]['InvCount'],
+                    'CountType' => $InvDet[$i][$j]['CountType'],
                     'ParentId' => $RoomlId
                 ]);
+                $RoomDet[$i]['InvDet'][$j] = $InvDet[$i][$j];
             }
-            $hotelDet .= "]";
-            $hotelDet .= "}";
         }
-        $hotelDet .= "]";
-        $hotelDet .= "}";
-        echo $hotelDet;
+        $hotelDet['Inventory'] = $RoomDet;
+        $RoomData = '';
+        $RoomData .= '[';
+        $roomCount = count($hotelDet['Inventory']);
+        foreach($hotelDet['Inventory'] as $key => $RoomDetRow)
+        {
+            
+            $InvData = '[';
+            $InvDataCount = count($RoomDetRow['InvDet']);
+            foreach($RoomDetRow['InvDet'] as $InvDetkey => $InvDetRow)
+            {
+                $InvData .= "{
+                    'InvCount' : '".$InvDetRow['InvCount']."',
+                    'CountType' : '".$InvDetRow['CountType']."'
+                }";
+                if($InvDetkey < $InvDataCount-1)
+                {
+                    $InvData .= ',';
+                }
+            }
+            $InvData .= ']';
+            $RoomData .= "{
+                'Start' : '".$RoomDetRow['Start']."',
+                'End' : '".$RoomDetRow['End']."',
+                'InvTypeCode' : '".$RoomDetRow['InvTypeCode']."',
+                'RatePlanCode' : '".$RoomDetRow['RatePlanCode']."',
+                'InvCounts' : $InvData
+            }";
+            if($key < $roomCount-1)
+            {
+                $RoomData .= ',';
+            }
+        }
+        $RoomData .= ']';
+
+        $HotelData = "{
+                    'CompanyName': '".$hotelDet['CompanyName']."',
+                    'CompanyType': '".$hotelDet['CompanyType']."',
+                    'CompanyCode': '".$hotelDet['CompanyCode']."',
+                    'Inventories' : $RoomData
+                }";
+        
+        dd($HotelData);
     }
 
     /**
