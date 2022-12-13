@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 12, 2022 at 06:29 PM
+-- Generation Time: Dec 13, 2022 at 10:23 AM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 8.1.1
 
@@ -113,6 +113,17 @@ CREATE TABLE `todos` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `todos`
+--
+
+INSERT INTO `todos` (`id`, `CompanyName`, `CompanyType`, `CompanyCode`, `Start`, `End`, `InvTypeCode`, `RatePlanCode`, `InvCount`, `CountType`, `ParentId`, `created_at`, `updated_at`) VALUES
+(1, 'My Hotel Name', '7', 'HTL15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2022-12-13 03:32:19', '2022-12-13 03:32:19'),
+(2, NULL, NULL, NULL, '2021-12-06', '2022-09-06', 'R15.3.1', 'R15.3.1.1', NULL, NULL, 1, '2022-12-13 03:32:19', '2022-12-13 03:32:19'),
+(3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '12', '2', 2, '2022-12-13 03:32:19', '2022-12-13 03:32:19'),
+(4, NULL, NULL, NULL, '2021-12-08', '2022-09-06', 'R15.3.2', 'R15.3.2.1', NULL, NULL, 1, '2022-12-13 03:32:19', '2022-12-13 03:32:19'),
+(5, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '12', '2', 4, '2022-12-13 03:32:19', '2022-12-13 03:32:19');
+
 -- --------------------------------------------------------
 
 --
@@ -200,7 +211,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `todos`
 --
 ALTER TABLE `todos`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `users`
